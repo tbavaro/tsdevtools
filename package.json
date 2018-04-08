@@ -22,6 +22,7 @@
     "clean": "rimraf lib && rimraf coverage",
     "format": "prettier --write \"{src}/**/*.ts\" es5",
     "lint": "tslint --force --format verbose \"src/**/*.ts\"",
+    "main": "node ./lib/main.js",
     "prepublishOnly": "npm run build",
     "prebuild": "npm run clean && echo skipping npm run format && npm run lint && echo Using TypeScript && tsc --version",
     "build": "tsc --pretty",
@@ -31,6 +32,7 @@
     "watch:test": "jest --watch"
   },
   "dependencies": {
+    "npm": "^5.8.0",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
@@ -43,7 +45,8 @@
     "ts-jest": "^22.0.1",
     "ts-node": "^3.2.0",
     "tslint": "^5.0.0",
-    "tslint-config-prettier": "^1.1.0"
+    "tslint-config-prettier": "^1.1.0",
+    "typescript": "^2.8.0"
   },
   "engines": {
     "node": ">=6.0.0"
