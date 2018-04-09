@@ -33,15 +33,16 @@
   },
   "dependencies": {
     "npm": "^5.8.0",
+    "rimraf": "^2.0.0",
     "yargs": "^11.0.0"
   },
   "devDependencies": {
     "@types/jest": "^22.0.1",
     "@types/node": "^8.0.0",
+    "@types/rimraf": "^2.0.2",
     "@types/yargs": "^11.0.0",
     "coveralls": "^2.0.0",
     "jest": "^22.0.4",
-    "rimraf": "^2.0.0",
     "ts-jest": "^22.0.1",
     "ts-node": "^3.2.0",
     "tslint": "^5.0.0",
