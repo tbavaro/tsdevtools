@@ -9,6 +9,10 @@ import * as git from "./git";
 import * as npm from "./npm";
 
 const EXPECTED_CURRENT_BRANCH = "master";
+const REMOTE_NAME = "origin";
+
+// TODO replace this with a set of "unignore" items instead?
+const GIT_IGNORE_DIST_FILENAME = ".gitignore-dist";
 
 export enum VersionBumpOptions {
   none,
@@ -81,9 +85,14 @@ export function run(attrs: DeployCommandAttrs) {
     }
   }
 
+  if (!fs.existsSync(GIT_IGNORE_DIST_FILENAME)) {
+    throw new AppError(`no ${GIT_IGNORE_DIST_FILENAME} file`);
+  }
+
   const repoName = inferRepoName();
 
   const originalRepoDir = process.cwd();
+  const originalRemoteURL = git.remote.getURL(REMOTE_NAME);
 
   const buildDir = createTempDir(`${repoName}.build`);
   runInDir(buildDir, () => {
@@ -106,7 +115,23 @@ export function run(attrs: DeployCommandAttrs) {
     console.log("Building...");
     npm.runBuild();
 
-    throw new Error("x");
+    console.log(`Pushing to ${REMOTE_NAME}/${attrs.branch}...`);
+    fs.copyFileSync(GIT_IGNORE_DIST_FILENAME, ".gitignore");
+    git.remote.setURL(REMOTE_NAME, originalRemoteURL);
+    git.fetch({
+      depth: 1,
+      branch: attrs.branch,
+      repo: REMOTE_NAME,
+      allowUnknownBranch: true
+    });
+    git.addAll();
+    git.commit({
+      amend: true,
+      dateNow: true,
+      message: "push"
+    });
+
+    throw new Error("quitting early");
   });
 
 
