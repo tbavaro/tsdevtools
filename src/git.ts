@@ -80,11 +80,42 @@ export function fetch(attrs?: {
   } catch (e) {
     if (attrs.allowUnknownBranch &&
       e instanceof Error &&
-      e.message.match(/Couldn\'t find remote ref/)) {
+      e.message.match(/Couldn.t find remote ref/)) {
       return "";
     }
     throw e;
   }
+}
+
+export function push(attrs?: {
+  force?: boolean,
+  repo?: string,
+  fromBranch?: string,
+  toBranch?: string
+}) {
+  attrs = attrs || {};
+
+  const args: string[] = [];
+
+  if (attrs.force) {
+    args.push("--force");
+  }
+
+  if (attrs.repo) {
+    args.push(attrs.repo);
+  }
+
+  if (attrs.fromBranch || attrs.toBranch) {
+    if (attrs.fromBranch === undefined ||
+      attrs.toBranch === undefined ||
+      attrs.repo === undefined) {
+      throw new Error("if from/to branch is defined, both must be, as well as the repo");
+    }
+
+    args.push(`${attrs.fromBranch}:${attrs.toBranch}`);
+  }
+
+  return git("push", args);
 }
 
 function callRemote(args?: string[]): string {
@@ -108,12 +139,6 @@ export const remote = makeFancyFunction(callRemote, {
     return callRemote(["set-url", name, url]);
   }
 });
-
-export interface IRemoteFunction {
-  /* tslint:disable-next-line:callable-types */
-  (args?: string[]): string;
-  getURL(name: string): string;
-}
 
 /**
  * Semantic git operations / queries

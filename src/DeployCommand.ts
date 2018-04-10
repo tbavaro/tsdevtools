@@ -8,6 +8,8 @@ import { AppError } from "./AppError";
 import * as git from "./git";
 import * as npm from "./npm";
 
+// TODO add versioning stuff
+
 const EXPECTED_CURRENT_BRANCH = "master";
 const REMOTE_NAME = "origin";
 
@@ -100,7 +102,6 @@ export function run(attrs: DeployCommandAttrs) {
     git.cloneLocalRepo({
       localRepoPath: originalRepoDir,
       branch: EXPECTED_CURRENT_BRANCH,
-      depth: 1,
       targetPath: "."
     });
 
@@ -119,16 +120,18 @@ export function run(attrs: DeployCommandAttrs) {
     fs.copyFileSync(GIT_IGNORE_DIST_FILENAME, ".gitignore");
     git.remote.setURL(REMOTE_NAME, originalRemoteURL);
     git.fetch({
-      depth: 1,
+      unshallow: true,
       branch: attrs.branch,
       repo: REMOTE_NAME,
       allowUnknownBranch: true
     });
     git.addAll();
-    git.commit({
-      amend: true,
-      dateNow: true,
-      message: "push"
+    git.commit({ message: "push" });
+    git.push({
+      force: true,
+      repo: REMOTE_NAME,
+      fromBranch: "HEAD",
+      toBranch: attrs.branch
     });
 
     throw new Error("quitting early");
