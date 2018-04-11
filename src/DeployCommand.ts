@@ -3,10 +3,12 @@ import * as os from "os";
 import * as path from "path";
 import * as process from "process";
 import * as rimraf from "rimraf";
+import { SemVer } from "semver";
 
 import { AppError } from "./AppError";
 import * as git from "./git";
 import * as npm from "./npm";
+import * as packagejson from "./packagejson";
 
 // TODO add versioning stuff
 
@@ -62,6 +64,25 @@ function runInDir<T>(dir: string, func: () => T): T {
   }
 }
 
+function bumpVersion(ver: SemVer, mode: VersionBumpOptions) {
+  switch (mode) {
+    case VersionBumpOptions.none:
+      return ver;
+
+    case VersionBumpOptions.patch:
+      return ver.inc("patch");
+
+    case VersionBumpOptions.minor:
+      return ver.inc("minor");
+
+    case VersionBumpOptions.major:
+      return ver.inc("major");
+
+    default:
+      throw new Error(`unsupported mode: ${mode}`);
+  }
+}
+
 export function run(attrs: DeployCommandAttrs) {
   // console.log("running deploy with attrs", JSON.stringify(attrs, null, 2));
   // throw new Error("xcxc");
@@ -90,6 +111,15 @@ export function run(attrs: DeployCommandAttrs) {
   if (!fs.existsSync(GIT_IGNORE_DIST_FILENAME)) {
     throw new AppError(`no ${GIT_IGNORE_DIST_FILENAME} file`);
   }
+
+  if (!packagejson.exists()) {
+    throw new AppError("no package.json");
+  }
+
+  const newVersion = bumpVersion(packagejson.getVersion(), attrs.versionBump);
+
+  packagejson.setVersion(newVersion);
+  throw new Error(`xcxc: [${newVersion}]`);
 
   const repoName = inferRepoName();
 
