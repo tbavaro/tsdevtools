@@ -28,10 +28,6 @@ const argv = (yargs
         default: DeployCommand.VersionBumpOptions.minor,
         description: "Version bump type"
       }))
-      .option("dry-run", {
-        boolean: true,
-        description: "Don't actually push anything"
-      })
       .option("[no-]fresh-install", {
         boolean: true,
         default: false,

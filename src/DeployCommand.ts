@@ -25,7 +25,6 @@ export enum VersionBumpOptions {
 
 export type DeployCommandAttrs = {
   branch: string;
-  dryRun: boolean;
   freshInstall: boolean;
   repo: string;
   versionBump: VersionBumpOptions;
