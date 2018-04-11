@@ -12,9 +12,9 @@ import * as packagejson from "./packagejson";
 
 const EXPECTED_CURRENT_BRANCH = "master";
 const REMOTE_NAME = "origin";
-
-// TODO replace this with a set of "unignore" items instead?
-const GIT_IGNORE_DIST_FILENAME = ".gitignore-dist";
+const GIT_IGNORE_FILENAME = ".gitignore";
+const GIT_IGNORE_DEPLOY_EXTRAS_FILENAME = ".gitignore-deploy-extras";
+const ENCODING = "utf8";
 
 export enum VersionBumpOptions {
   none,
@@ -80,6 +80,19 @@ function bumpVersion(ver: SemVer, mode: VersionBumpOptions) {
   }
 }
 
+function applyGitIgnoreDeployExtras() {
+  const extrasData = [
+    "",
+    "",
+    "# deploy only:",
+    fs.readFileSync(
+      GIT_IGNORE_DEPLOY_EXTRAS_FILENAME,
+      { encoding: ENCODING }
+    )
+  ].join("\n");
+  fs.appendFileSync(GIT_IGNORE_FILENAME, extrasData, { encoding: ENCODING });
+}
+
 function appAssert(condition: boolean, message: string): condition is true {
   if (!condition) {
     throw new AppError(message);
@@ -98,8 +111,8 @@ export function run(attrs: DeployCommandAttrs) {
   appAssert(!git.thereAreUncommittedChanges(), "there are uncommitted changes");
   appAssert(!git.thereAreUntrackedFiles(), "there are untracked files");
   appAssert(
-    fs.existsSync(GIT_IGNORE_DIST_FILENAME),
-    `no ${GIT_IGNORE_DIST_FILENAME} file`
+    fs.existsSync(GIT_IGNORE_DEPLOY_EXTRAS_FILENAME),
+    `no ${GIT_IGNORE_DEPLOY_EXTRAS_FILENAME} file`
   );
   appAssert(packagejson.exists(), "no package.json");
 
@@ -131,7 +144,7 @@ export function run(attrs: DeployCommandAttrs) {
     npm.runBuild();
 
     console.log(`Pushing to ${REMOTE_NAME}/${attrs.branch}...`);
-    fs.copyFileSync(GIT_IGNORE_DIST_FILENAME, ".gitignore");
+    applyGitIgnoreDeployExtras();
     git.remote.setURL(REMOTE_NAME, originalRemoteURL);
     git.fetch({
       unshallow: true,
