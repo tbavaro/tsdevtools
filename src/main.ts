@@ -25,6 +25,10 @@ const argv = (yargs
         description: "Repo to push to",
         string: true
       })
+      .option("subtreeDir", {
+        description: "If specified, will use git-subtree instead of normal push",
+        string: true
+      })
       .option("version-bump", versionBumpOptionsEnumHelper.wrapOptions({
         default: DeployCommand.VersionBumpOptions.minor,
         description: "Version bump type"
@@ -33,6 +37,13 @@ const argv = (yargs
         boolean: true,
         default: false,
         description: "Run `npm install` from scratch to get dependencies"
+      })
+      .option("move-node-modules-temporarily", {
+        boolean: true,
+        default: false,
+        description:
+          "Instead of symlinking, move node_modules (and then " +
+          "move it back later) to work around tsc issues"
       })
     );
   })
@@ -47,7 +58,9 @@ try {
       DeployCommand.run({
         branch: argv.branch,
         freshInstall: argv.freshInstall === true,
+        moveNodeModulesTemporarily: !!argv.moveNodeModulesTemporarily,
         repo: argv.repo,
+        subtreeDir: argv.subtreeDir,
         versionBump: versionBumpOptionsEnumHelper.stringToEnumValue(argv.versionBump)
       });
       break;

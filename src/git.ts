@@ -1,6 +1,7 @@
 import * as childProcess from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import { isUndefined } from "util";
 
 function makeFancyFunction<
   FUNC extends (...args: any[]) => any,
@@ -166,6 +167,37 @@ export const remote = makeFancyFunction(doRemote, {
 
   setURL(name: string, url: string) {
     return doRemote(["set-url", name, url]);
+  }
+});
+
+export type SubtreePushOptions = {
+  message?: string;
+  prefix: string;
+  repository: string;
+  ref: string;
+};
+
+function doSubtree(command: string, args?: string[]) {
+  args = args || [];
+  return git("subtree", [command, ...args]);
+}
+
+export const subtree = makeFancyFunction(doSubtree, {
+  push(options: SubtreePushOptions) {
+    const args: string[] = [];
+
+    args.push("--prefix");
+    args.push(options.prefix);
+
+    if (!isUndefined(options.message)) {
+      args.push("--message");
+      args.push(options.message);
+    }
+
+    args.push(options.repository);
+    args.push(options.ref);
+
+    return doSubtree("push", args);
   }
 });
 
