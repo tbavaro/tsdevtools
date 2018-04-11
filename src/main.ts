@@ -25,7 +25,7 @@ const argv = (yargs
         string: true
       })
       .option("version-bump", versionBumpOptionsEnumHelper.wrapOptions({
-        default: DeployCommand.VersionBumpOptions.patch,
+        default: DeployCommand.VersionBumpOptions.minor,
         description: "Version bump type"
       }))
       .option("dry-run", {
