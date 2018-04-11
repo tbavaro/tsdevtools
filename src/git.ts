@@ -25,9 +25,34 @@ function git(command: string, args?: string[]): string {
  * Direct git functions
  */
 
-export function addAll() {
-  return git("add", ["--all"]);
+export type AddOptions = {
+  all?: boolean
+};
+
+function doAdd(files: string[], options?: AddOptions) {
+  options = options || {};
+
+  if (options.all) {
+    if (files.length > 0) {
+      throw new Error("doesn't make sense to have filenames and --all");
+    }
+  } else {
+    if (files.length === 0) {
+      throw new Error("must specify filenames or --all");
+    }
+  }
+
+  const args: string[] = [];
+  if (options.all) {
+    args.push("--all");
+  }
+
+  return git("add", [...args, "--", ...files]);
 }
+
+export const add = makeFancyFunction(doAdd, {
+  all() { doAdd([], { all: true }); }
+});
 
 export function commit(attrs: {
   amend?: boolean,
@@ -57,6 +82,7 @@ export function diff(): string {
 export function fetch(attrs?: {
   branch?: string,
   depth?: number,
+  unshallow?: boolean,
   repo?: string,
   allowUnknownBranch?: boolean
 }) {
@@ -64,6 +90,9 @@ export function fetch(attrs?: {
   const args: string[] = [];
   if (attrs.depth !== undefined) {
     args.push(`--depth=${attrs.depth}`);
+  }
+  if (attrs.unshallow) {
+    args.push("--unshallow");
   }
   if (attrs.repo !== undefined) {
     args.push(attrs.repo);
@@ -118,27 +147,45 @@ export function push(attrs?: {
   return git("push", args);
 }
 
-function callRemote(args?: string[]): string {
+function doRemote(args?: string[]): string {
   return git("remote", args);
 }
 
-export const remote = makeFancyFunction(callRemote, {
+export const remote = makeFancyFunction(doRemote, {
   add(name: string, url: string) {
-    return callRemote(["add", name, url]);
+    return doRemote(["add", name, url]);
   },
 
   getURL(name: string) {
-    return callRemote(["get-url", name]);
+    return doRemote(["get-url", name]);
   },
 
   remove(name: string) {
-    return callRemote(["remove", name]);
+    return doRemote(["remove", name]);
   },
 
   setURL(name: string, url: string) {
-    return callRemote(["set-url", name, url]);
+    return doRemote(["set-url", name, url]);
   }
 });
+
+export type TagOptions = {
+  force?: boolean;
+};
+
+export function tag(name: string, options?: TagOptions) {
+  options = options || {};
+
+  const args: string[] = [];
+
+  if (options.force) {
+    args.push("--force");
+  }
+
+  args.push(name);
+
+  return git("tag", args);
+}
 
 /**
  * Semantic git operations / queries

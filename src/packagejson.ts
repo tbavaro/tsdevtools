@@ -1,7 +1,9 @@
 import * as fs from "fs";
 import * as semver from "semver";
+import { isString } from "util";
 
 const FILENAME = "package.json";
+const ENCODING = "utf8";
 
 export function exists() {
   return fs.existsSync(FILENAME);
@@ -17,7 +19,7 @@ let lastReadHadNewlineAtEOF: boolean = false;
 // TODO could get fancy and use autogents-validator here
 function read(): PackageConfig {
   if (cached === null) {
-    const data = fs.readFileSync(FILENAME, { encoding: "utf8" });
+    const data = fs.readFileSync(FILENAME, { encoding: ENCODING });
     cached = JSON.parse(data) as PackageConfig;
     lastReadHadNewlineAtEOF = data.endsWith("\n");
   }
@@ -29,7 +31,7 @@ function write(config: PackageConfig) {
   if (lastReadHadNewlineAtEOF) {
     data += "\n";
   }
-  fs.writeFileSync(FILENAME, data, { encoding: "utf8" });
+  fs.writeFileSync(FILENAME, data, { encoding: ENCODING });
   invalidateCache();
 }
 
@@ -45,7 +47,7 @@ function invalidateCache() {
 
 export function getVersion(): semver.SemVer {
   const data = read();
-  if (typeof data.version !== "string") {
+  if (!isString(data.version)) {
     throw new Error("no version");
   }
   const ver = semver.parse(data.version, /*loose=*/true);

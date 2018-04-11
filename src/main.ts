@@ -28,11 +28,6 @@ const argv = (yargs
         default: DeployCommand.VersionBumpOptions.patch,
         description: "Version bump type"
       }))
-      .option("allow-unclean", {
-        boolean: true,
-        default: false,
-        description: "Allow pushes from unclean git branches"
-      })
       .option("dry-run", {
         boolean: true,
         description: "Don't actually push anything"
@@ -53,7 +48,6 @@ try {
   switch(command) {
     case "deploy": {
       DeployCommand.run({
-        allowUnclean: argv.allowUnclean === true,
         branch: argv.branch,
         dryRun: argv.dryRun,
         freshInstall: argv.freshInstall === true,
