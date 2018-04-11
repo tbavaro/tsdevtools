@@ -146,7 +146,7 @@ export function run(attrs: DeployCommandAttrs) {
     applyGitIgnoreDeployExtras();
     git.remote.setURL(REMOTE_NAME, originalRemoteURL);
     git.fetch({
-      unshallow: true,
+      depth: 100000, // unshallow: true, <-- doesn't work if depth is actually just 1
       branch: attrs.branch,
       repo: REMOTE_NAME,
       allowUnknownBranch: true
