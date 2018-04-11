@@ -12,6 +12,7 @@ const versionBumpOptionsEnumHelper = new EnumOptionHelper(DeployCommand.VersionB
 const argv = (yargs
   .version(false)
   .demandCommand()
+  .strict()
   .command("deploy", "Deploy built artifacts to remote repo", (yargs) => {
     return (yargs
       .option("branch", {
@@ -45,7 +46,6 @@ try {
     case "deploy": {
       DeployCommand.run({
         branch: argv.branch,
-        dryRun: argv.dryRun,
         freshInstall: argv.freshInstall === true,
         repo: argv.repo,
         versionBump: versionBumpOptionsEnumHelper.stringToEnumValue(argv.versionBump)
