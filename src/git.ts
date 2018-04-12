@@ -11,15 +11,23 @@ function makeFancyFunction<
   return func as any;
 }
 
-function git(command: string, args?: string[]): string {
+export type GitOptions = {
+  suppressStderr?: boolean
+};
+
+function git(command: string, args?: string[], options?: GitOptions): string {
   args = args || [];
-  return childProcess.execFileSync(
-    "git",
-    [command, ...args],
-    {
-      encoding: "utf8"
-    }
-  ).trimRight();
+  options = options || {};
+
+  const execOptions: childProcess.ExecFileSyncOptionsWithStringEncoding = {
+    encoding: "utf8"
+  };
+
+  if (options.suppressStderr) {
+    execOptions.stdio = ["pipe", "pipe", "ignore"];
+  }
+
+  return childProcess.execFileSync("git", [command, ...args], execOptions).trimRight();
 }
 
 /**
@@ -54,6 +62,20 @@ function doAdd(files: string[], options?: AddOptions) {
 export const add = makeFancyFunction(doAdd, {
   all() { doAdd([], { all: true }); }
 });
+
+function doBranch(args?: string[]) {
+  return git("branch", args);
+}
+
+export const branch = makeFancyFunction(doBranch, {
+  forceDelete(branchName: string) {
+    doBranch(["-D", branchName]);
+  }
+});
+
+export function checkout(args?: string[]) {
+  return git("checkout", args);
+}
 
 export function commit(attrs: {
   amend?: boolean,
@@ -259,4 +281,13 @@ export function cloneLocalRepo(attrs: {
   ]);
 
   git("clone", args);
+}
+
+export function localBranchExists(name: string): boolean {
+  try {
+    git("rev-parse", ["--verify", name], { suppressStderr: true });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }

@@ -33,18 +33,6 @@ const argv = (yargs
         default: DeployCommand.VersionBumpOptions.minor,
         description: "Version bump type"
       }))
-      .option("[no-]fresh-install", {
-        boolean: true,
-        default: false,
-        description: "Run `npm install` from scratch to get dependencies"
-      })
-      .option("move-node-modules-temporarily", {
-        boolean: true,
-        default: false,
-        description:
-          "Instead of symlinking, move node_modules (and then " +
-          "move it back later) to work around tsc issues"
-      })
     );
   })
 ).argv;
@@ -57,8 +45,6 @@ try {
     case "deploy": {
       DeployCommand.run({
         branch: argv.branch,
-        freshInstall: argv.freshInstall === true,
-        moveNodeModulesTemporarily: !!argv.moveNodeModulesTemporarily,
         repo: argv.repo,
         subtreeDir: argv.subtreeDir,
         versionBump: versionBumpOptionsEnumHelper.stringToEnumValue(argv.versionBump)
