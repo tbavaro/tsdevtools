@@ -9,7 +9,7 @@ Helper tools for typescript:
 ## Install
 
 ```
-$ npm install tbavaro/tsdevtools --savedev
+$ npm install tbavaro/tsdevtools#dist --savedev
 ```
 
 ## Deploy
