@@ -1,5 +1,4 @@
 import * as fs from "fs";
-import * as semver from "semver";
 import { isString } from "util";
 
 const FILENAME = "package.json";
@@ -45,18 +44,14 @@ function invalidateCache() {
   cached = null;
 }
 
-export function getVersion(): semver.SemVer {
+export function getVersion(): string {
   const data = read();
   if (!isString(data.version)) {
     throw new Error("no version");
   }
-  const ver = semver.parse(data.version, /*loose=*/true);
-  if (ver === null) {
-    throw new Error(`cannot parse version: ${data.version}`);
-  }
-  return ver;
+  return data.version;
 }
 
-export function setVersion(ver: semver.SemVer | string) {
-  update(data => { data.version = ver.toString(); });
+export function setVersion(ver: string) {
+  update(data => { data.version = ver; });
 }

@@ -1,10 +1,10 @@
 import * as fs from "fs";
-import { SemVer } from "semver";
 
 import { AppError } from "./AppError";
 import * as git from "./git";
 import * as npm from "./npm";
 import * as packagejson from "./packagejson";
+import * as VersionUtils from "./VersionUtils";
 
 const EXPECTED_CURRENT_BRANCH = "master";
 const REMOTE_NAME = "origin";
@@ -12,38 +12,14 @@ const GIT_IGNORE_FILENAME = ".gitignore";
 const GIT_IGNORE_DEPLOY_EXTRAS_FILENAME = ".gitignore-deploy-extras";
 const ENCODING = "utf8";
 
-export enum VersionBumpOptions {
-  none,
-  patch,
-  minor,
-  major
-}
+export const VersionBumpOptions = VersionUtils.VersionBumpOptions;
 
 export type DeployCommandAttrs = {
   branch: string;
   repo: string;
   subtreeDir?: string;
-  versionBump: VersionBumpOptions;
+  versionBump: VersionUtils.VersionBumpOptions;
 };
-
-function bumpVersion(ver: SemVer, mode: VersionBumpOptions) {
-  switch (mode) {
-    case VersionBumpOptions.none:
-      return ver;
-
-    case VersionBumpOptions.patch:
-      return ver.inc("patch");
-
-    case VersionBumpOptions.minor:
-      return ver.inc("minor");
-
-    case VersionBumpOptions.major:
-      return ver.inc("major");
-
-    default:
-      throw new Error(`unsupported mode: ${mode}`);
-  }
-}
 
 function applyGitIgnoreDeployExtras() {
   const extrasData = [
@@ -83,7 +59,7 @@ export function run(attrs: DeployCommandAttrs) {
   appAssert(!git.localBranchExists(attrs.branch), `local branch ${attrs.branch} already exists`);
 
   // gather data
-  const newVersion = bumpVersion(packagejson.getVersion(), attrs.versionBump).toString();
+  const newVersion = VersionUtils.bumpVersion(packagejson.getVersion(), attrs.versionBump);
   const originalRemoteURL = git.remote.getURL(REMOTE_NAME);
 
   // switch to build branch
@@ -135,7 +111,7 @@ export function run(attrs: DeployCommandAttrs) {
   git.checkout([EXPECTED_CURRENT_BRANCH]);
 
   console.log("Tagging successful build...");
-  if (attrs.versionBump !== VersionBumpOptions.none) {
+  if (attrs.versionBump !== VersionUtils.VersionBumpOptions.none) {
     packagejson.setVersion(newVersion);
     git.add(["package.json"]);
     git.commit({ message: `v${newVersion}` });
