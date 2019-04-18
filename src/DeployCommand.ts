@@ -90,7 +90,8 @@ export function run(attrs: DeployCommandAttrs) {
   console.log(`Switching to build branch (${attrs.branch})...`);
   git.checkout(["-b", attrs.branch]);
 
-  console.log("Building...");
+  console.log(`Building ${newVersion}...`);
+  packagejson.setVersion(newVersion);
   npm.runBuild();
 
   console.log(`Pushing to ${REMOTE_NAME}/${attrs.branch}...`);
@@ -102,7 +103,6 @@ export function run(attrs: DeployCommandAttrs) {
     repo: REMOTE_NAME,
     allowUnknownBranch: true
   });
-  packagejson.setVersion(newVersion);
   git.add.all();
   git.commit({ message: `deploy v${newVersion}` });
 
